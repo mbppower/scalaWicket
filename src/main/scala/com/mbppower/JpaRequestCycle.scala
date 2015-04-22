@@ -17,34 +17,61 @@
 package com.mbppower
 
 import javax.persistence.EntityManager
+import javax.persistence.EntityManagerFactory
+import javax.persistence.Persistence
 import org.apache.wicket.request.IRequestHandler;
 import org.apache.wicket.request.cycle.AbstractRequestCycleListener
 import org.apache.wicket.request.cycle.RequestCycle
 
 object JpaRequestCycle extends AbstractRequestCycleListener {
-
-  var em: EntityManager = null
-
+	
+	var emf: EntityManagerFactory = Persistence.createEntityManagerFactory("persistenceUnit")
+  var emThreadLocal: ThreadLocal[EntityManager] = new ThreadLocal[EntityManager]
+	 
   def getEntityManager(): EntityManager = {
-    if(em == null || !em.isOpen()) {
-      val emf = WicketApplication.getEntityManager
-      em = emf.createEntityManager()
+    if(emThreadLocal.get() == null) {
+      emThreadLocal.set(emf.createEntityManager())
     }
-    return em
+    return emThreadLocal.get()
   }
 
   override def onEndRequest(r: RequestCycle) = {
-    if (em != null && em.isOpen()) {
-      if (em.getTransaction().isActive()) em.getTransaction().rollback()
-      em.close()
-    }
+		JpaRequestCycle.close()
   }
 
   override def onException(r: RequestCycle, e: Exception): IRequestHandler  = {
-    if (em != null && em.isOpen()) {
-	  if (em.getTransaction().isActive()) em.getTransaction().rollback()
-	  em.close()
-    }
-	return null
+		JpaRequestCycle.close()
+		return null
   }
+	
+	def commit(){
+		emThreadLocal.get().getTransaction().commit()
+	}
+	
+	def begin(){
+		emThreadLocal.get().getTransaction().begin()
+	}
+	
+	def rollback(){
+		val em:EntityManager = emThreadLocal.get()
+		if (em.getTransaction().isActive())
+			em.getTransaction().rollback()
+	}
+	
+	def close(){
+		if(emThreadLocal != null){
+			val em:EntityManager = emThreadLocal.get()
+			if (em != null) {
+				em.close()
+			}
+			emThreadLocal.set(null);
+		}
+	}
+	
+	def destroy(){
+		if(emThreadLocal != null){
+			close();
+			emThreadLocal.remove();
+		}
+	}
 }

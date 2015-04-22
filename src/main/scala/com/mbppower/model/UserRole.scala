@@ -26,10 +26,6 @@ class UserRole(roleName:String) extends java.io.Serializable {
   @GeneratedValue(strategy = GenerationType.AUTO)
   var id:Int = _
   var name:String = roleName
-  
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_data_id")
-  var userData:UserData = null
 	
 	//for hibernate
 	def this() = this(null)

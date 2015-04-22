@@ -42,9 +42,9 @@ class HomePageScala(parameters: PageParameters) extends WebPage {
       super.onSubmit()
       val model : UserData = getDefaultModelObject().asInstanceOf[UserData];
 			var em: EntityManager = JpaRequestCycle.getEntityManager()
-			em.getTransaction().begin();
+			JpaRequestCycle.begin();
 			em.merge(model)
-			em.getTransaction().commit();
+			JpaRequestCycle.commit();
 			
 			refreshUserList();
 			userList.setList(userListModel)
@@ -54,7 +54,7 @@ class HomePageScala(parameters: PageParameters) extends WebPage {
   form.add(new TextField[String]("name"))
 	
 	val roles = em.createQuery("From UserRole", classOf[UserRole]).getResultList()
-  form.add(new DropDownChoice[UserRole]("roles").setChoices(roles))//.setChoiceRenderer(new ChoiceRenderer("id", "name")))
+  form.add(new DropDownChoice[UserRole]("userRole").setChoices(roles).setChoiceRenderer(new ChoiceRenderer("name", "id")))
 	add(form)
 	
 	var countModel = new Model[Integer]{
@@ -78,10 +78,10 @@ class HomePageScala(parameters: PageParameters) extends WebPage {
 					
 					//delete item
 					var em: EntityManager = JpaRequestCycle.getEntityManager()
-					em.getTransaction().begin();
+					JpaRequestCycle.begin();
 					val userData = item.getModelObject();
 					em.remove(if(em.contains(userData)) userData else em.merge(userData));
-					em.getTransaction().commit();
+					JpaRequestCycle.commit();
 					
 					//update view
 					refreshUserList();	
@@ -107,9 +107,9 @@ class HomePageScala(parameters: PageParameters) extends WebPage {
   add(new AjaxLink("addRoleButton", Model.of("")) {
     override def onClick(target: AjaxRequestTarget) {
 			var em: EntityManager = JpaRequestCycle.getEntityManager()
-			em.getTransaction().begin();
+			JpaRequestCycle.begin();
 			em.persist(new UserRole("Farewell"));
-			em.getTransaction().commit();
+			JpaRequestCycle.commit();
     }
   })
 

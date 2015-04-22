@@ -18,8 +18,6 @@ package com.mbppower.model
 
 import scala.collection.JavaConversions._
 import javax.persistence._
-import java.util.ArrayList
-import java.util.List
 
 
 @Entity
@@ -29,8 +27,9 @@ class UserData(firstName: String) extends java.io.Serializable {
 	var id: Int = _
 	var name: String = firstName
 
-	@OneToMany(cascade = Array(CascadeType.ALL), mappedBy = "userData", fetch = FetchType.LAZY)
-	var roles: List[UserRole] = new ArrayList[UserRole]
+	@OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_role_id")
+  var userRole:UserRole = null
 
 	//for hibernate
 	def this() = this(null)
