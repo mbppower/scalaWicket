@@ -20,7 +20,7 @@ mountResource("/view", new NashornResourceReference("/js/view/index.js"))
 <code>
 var outputs = "";
 var i = 0;
-while(i++ < 100 ){
+while(i++ &lt; 100 ){
 	outputs += " " + i;
 }
 
