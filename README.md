@@ -11,26 +11,26 @@
 
 <p>Page Mount:</p>
 
-<code>
+```
 mountResource("/view", new NashornResourceReference("/js/view/index.js"))
-</code>
+```
 
 <p>index.js contents:</p>
 
-<code>
+```
 var outputs = "";
 var i = 0;
-while(i++ &lt; 100 ){
+while(i++ < 100 ){
 	outputs += " " + i;
 }
 
 var name = context.getParameters().get("name").toString();
 
 output.write(outputs + " param: " + name);
-</code>
+```
 
 <p>Browser output calling url http://localhost:8080/view?name=12</p>
 
-<code>
+```
 1 2 3 4 5 6 7 8 9 10 param: 12
-</code>
+```
