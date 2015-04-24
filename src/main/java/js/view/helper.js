@@ -14,12 +14,28 @@
  * limitations under the License.
  */
 
-load('C:/server/github/scalaWicket/src/main/java/js/view/helper.js');
-load('C:/server/github/scalaWicket/src/main/java/js/lib/underscore-min.js');
+var TestObj = {
+	func1 : function(){
+		return "ALOHA";
+	},
+	readContents : function(path) {
+		with (new JavaImporter(java.io, java.nio.file)) {
+			var path = Paths.get("C:/server/github/scalaWicket/src/main/java/js/" + path);
+			var reader = null;
+			try {
+				reader = new BufferedReader(new InputStreamReader(Files.newInputStream(path)));
+				var buffer = "", line = null;
+				while ((line = reader.readLine()) != null) {
+					buffer += line;
+				}
+			}
+			finally {
+				if(reader)
+					reader.close();
+			}
+			return buffer;
+		}
+		return null;
+	}
+}
 
-
-var name = context.getParameters().get("name").toString();
-
-var compiled = _.template(TestObj.readContents("view/template/index.html"));
-
-output.write(compiled({name : name, ret: TestObj.func1(), tpl : "a"}));
