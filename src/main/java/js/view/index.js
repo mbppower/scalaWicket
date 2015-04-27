@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-load('C:/server/github/scalaWicket/src/main/java/js/view/helper.js');
-load('C:/server/github/scalaWicket/src/main/java/js/lib/underscore-min.js');
+load(jsBaseDir + '/js/view/helper.js');
+load(jsBaseDir + '/js/lib/underscore-min.js');
 
 
 var name = context.getParameters().get("name").toString();
 
-var compiled = _.template(TestObj.readContents("view/template/index.html"));
+var compiled = _.template(Helper.readContents(jsBaseDir + "/js/view/template/index.html"));
 
-output.write(compiled({name : name, ret: TestObj.func1(), tpl : "a"}));
+output.write(compiled({name : name, ret: "Underscore Template", tpl : "Yeah!"}));

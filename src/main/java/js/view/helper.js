@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-var TestObj = {
-	func1 : function(){
-		return "ALOHA";
-	},
+var Helper = {
 	readContents : function(path) {
 		with (new JavaImporter(java.io, java.nio.file)) {
-			var path = Paths.get("C:/server/github/scalaWicket/src/main/java/js/" + path);
+			var path = Paths.get(path);
 			var reader = null;
 			try {
 				reader = new BufferedReader(new InputStreamReader(Files.newInputStream(path)));

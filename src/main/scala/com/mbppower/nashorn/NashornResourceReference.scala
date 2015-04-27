@@ -45,14 +45,15 @@ class NashornResource(path:String) extends AbstractResource {
 				val outputStream = attributes.getResponse().getOutputStream();
 				val writer = new OutputStreamWriter(outputStream);
 				val context = WebApplication.get().getServletContext();
-				val jsFile = context.getRealPath("/WEB-INF/classes/" + path);
-				
+				var jsBaseDir = context.getRealPath("/WEB-INF/classes")
+
 				//expose java objects
 				engine.put("context", attributes)
+				engine.put("jsBaseDir", jsBaseDir)
 				engine.put("output", writer)
 
 				//process
-				engine.eval(new FileReader(jsFile));
+				engine.eval(new FileReader( jsBaseDir + path));
 				writer.flush();
 				writer.close();
 			}      
