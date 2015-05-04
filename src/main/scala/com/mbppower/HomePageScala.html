@@ -4,21 +4,24 @@
 		<title>a</title>
 	</head>
 <body>
-	
-	<p>Users: <span wicket:id="users"/></p>
-	<ul wicket:id="userListContainer">
-		<li wicket:id="userList">
-			<label wicket:id="name"></label>
-			<button wicket:id="deleteButton">X</button>
-		</li>
-	</ul>
-	
-	<form wicket:id="form">
-		<label>Name: <input wicket:id="name" /></label>
-		<label>Roles: <select wicket:id="userRole"></select></label>
-	</form>
+	<section>
+		<p>Users: <span wicket:id="users"/></p>
+		<ul wicket:id="userListContainer">
+			<li wicket:id="userList">
+				Name: <label wicket:id="name"></label>
+				Role: <label wicket:id="role"></label>
+				<button wicket:id="deleteButton">X</button>
+			</li>
+		</ul>
+	</section>
+	<section>
+		<form wicket:id="form">
+			<label>Name: <input wicket:id="name" /></label>
+			<label>Roles: <select wicket:id="userRole"></select></label>
+		</form>
     
-	<p><input wicket:id="submitButton" type="submit" value="Save"/></p>
-	<p><button wicket:id="addRoleButton">Create New Role</button></p>
+		<p><input wicket:id="submitButton" type="submit" value="Save"/></p>
+		<p><button wicket:id="addRoleButton">Create New Role</button></p>
+	</section>
 </body>
 </html> 

@@ -27,9 +27,9 @@ class UserData(firstName: String) extends java.io.Serializable {
 	var id: Int = _
 	var name: String = firstName
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "user_role_id")
-  var userRole:UserRole = null
+  var userRole:UserRole = _
 
 	//for hibernate
 	def this() = this(null)

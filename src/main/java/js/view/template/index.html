@@ -24,8 +24,12 @@ limitations under the License.
 		<h1>I am a template</h1>
 		<div>
 			<b>RequestParam: <%= name %></b>
-			<b>FunctionReturn:<%= ret %></b>
-			<b>FunctionTpl:<%= tpl %></b>
+			<b>Help:<%= help %></b>
 		</div>
+		<ul>
+			<% _.each(users, function(user) { %> 
+				<li>Name: <%= user.name() %> Role: <%= user.userRole() ? user.userRole().name() : "None" %></li>
+			<% }); %>
+		</ul>
 	</body>
 </html>

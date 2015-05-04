@@ -16,6 +16,7 @@
 
 package com.mbppower.nashorn
 
+import com.mbppower.JpaRequestCycle
 import java.io.FileReader
 import java.io.OutputStreamWriter
 import org.apache.wicket.protocol.http.WebApplication
@@ -48,6 +49,7 @@ class NashornResource(path:String) extends AbstractResource {
 				var jsBaseDir = context.getRealPath("/WEB-INF/classes")
 
 				//expose java objects
+				engine.put("jpa", JpaRequestCycle)
 				engine.put("context", attributes)
 				engine.put("jsBaseDir", jsBaseDir)
 				engine.put("output", writer)

@@ -17,9 +17,21 @@
 load(jsBaseDir + '/js/view/helper.js');
 load(jsBaseDir + '/js/lib/underscore-min.js');
 
-
+//get request parameter
 var name = context.getParameters().get("name").toString();
 
+//parse undescore template
 var compiled = _.template(Helper.readContents(jsBaseDir + "/js/view/template/index.html"));
 
-output.write(compiled({name : name, ret: "Underscore Template", tpl : "Yeah!"}));
+//jpa entity manager instance
+var em = jpa.getEntityManager();
+var users = em.createQuery("From UserData").getResultList();
+
+//render template and output it to the browser
+output.write(
+	compiled({
+		name : name,
+		help: "Underscore Template. User list:",
+		users : users
+	})
+);

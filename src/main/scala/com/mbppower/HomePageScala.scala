@@ -1,9 +1,7 @@
 package com.mbppower
 
-import org.apache.wicket.behavior.AbstractAjaxBehavior
 import org.apache.wicket.markup.html.WebMarkupContainer
 import org.apache.wicket.markup.html.WebPage
-import org.apache.wicket.model.PropertyModel
 import org.apache.wicket.request.mapper.parameter.PageParameters
 import org.apache.wicket.markup.html.basic.Label
 import org.apache.wicket.markup.html.form.Button
@@ -17,6 +15,7 @@ import org.apache.wicket.model.CompoundPropertyModel
 import org.apache.wicket.model.Model
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior
 import org.apache.wicket.ajax.markup.html.AjaxLink
+import java.util.Date
 import javax.persistence.EntityManager
 import com.mbppower.model.UserData
 import com.mbppower.model.UserRole
@@ -25,55 +24,63 @@ import org.apache.wicket.ajax.AjaxRequestTarget
 import scala.collection.JavaConversions._
 
 class HomePageScala(parameters: PageParameters) extends WebPage {
-	var userListModel:java.util.List[UserData] = _
-	
-  var em = JpaRequestCycle.getEntityManager()
 
-  val id = if (parameters.get("id").isEmpty()) 0 else parameters.get("id").toInt()
-  var user = em.find[UserData](classOf[UserData], id)
-	if(user == null) user = new UserData()
+  var em = JpaRequestCycle.getEntityManager()
+  val user = Model.of(getUserById(if (parameters.get("id").isEmpty()) 0 else parameters.get("id").toInt()));
 	
 	//user list
-	refreshUserList();
+	val userListModel = Model.ofList(em.createQuery("From UserData", classOf[UserData]).getResultList());
 	
   //form
   val form = new Form("form", new CompoundPropertyModel[UserData](user)) {
     override def onSubmit() {
       super.onSubmit()
+			
+			//set role
       val model : UserData = getDefaultModelObject().asInstanceOf[UserData];
+			//save
 			var em: EntityManager = JpaRequestCycle.getEntityManager()
 			JpaRequestCycle.begin();
 			em.merge(model)
 			JpaRequestCycle.commit();
 			
 			refreshUserList();
-			userList.setList(userListModel)
     }
   }
-
-  form.add(new TextField[String]("name"))
+	form.setOutputMarkupId(true)
+	//roles
+	val rolesListModel = Model.ofList(em.createQuery("From UserRole", classOf[UserRole]).getResultList())
+	val rolesDropdown = new DropDownChoice[UserRole]("userRole", rolesListModel).setChoiceRenderer(new ChoiceRenderer("name", "id")).setOutputMarkupId(true)
 	
-	val roles = em.createQuery("From UserRole", classOf[UserRole]).getResultList()
-  form.add(new DropDownChoice[UserRole]("userRole").setChoices(roles).setChoiceRenderer(new ChoiceRenderer("name", "id")))
+	//add components
+	form.add(rolesDropdown)
+	form.add(new TextField[String]("name"))
 	add(form)
 	
 	var countModel = new Model[Integer]{
 		override def getObject():Integer = {
-			return userListModel.length
+			return userListModel.getObject().length
 		}
 	}
 
-  val label = new Label("users", countModel)
-	label.setOutputMarkupId(true);
+  val label = new Label("users", countModel).setOutputMarkupId(true);
 	add(label)
+	
+	//user list
 	val userListContainer = new WebMarkupContainer("userListContainer");
 	userListContainer.setOutputMarkupId(true)
-	val userList = new ListView[UserData]("userList", Model.ofList(userListModel)){
+	val userList = new ListView[UserData]("userList", userListModel){
 		
 		override def populateItem(item: ListItem[UserData]){
 			val _this = this;
-			item.add(new Label("name", new PropertyModel(item.getModel(), "name")))
-			item.add(new Button("deleteButton")).add(new AjaxEventBehavior("click"){
+			val userData = item.getModel().getObject()
+			
+			//labels
+			item.add(new Label("name", Model.of(userData.name)))
+			item.add(new Label("role", Model.of(Option[UserRole](userData.userRole).map(_.name))))
+			
+			//delete
+			item.add(new Button("deleteButton").add(new AjaxEventBehavior("click"){
 				override def onEvent(target: AjaxRequestTarget) {
 					
 					//delete item
@@ -85,16 +92,20 @@ class HomePageScala(parameters: PageParameters) extends WebPage {
 					
 					//update view
 					refreshUserList();	
-					_this.setList(userListModel)
+					_this.setList(userListModel.getObject())
 					target.add(userListContainer)
 					target.add(label)
+				}
+			})).add(new AjaxEventBehavior("click"){
+				override def onEvent(target: AjaxRequestTarget) {
+					user.setObject(getUserById(item.getModelObject().id));
+					target.add(form)
 				}
 			})
 		}
 	}
 
-	userListContainer.add(userList);
-	add(userListContainer);
+	add(userListContainer.add(userList));
 	
 	add(new Button("submitButton").add(new AjaxFormSubmitBehavior(form, "click"){
 		override def onSubmit(target: AjaxRequestTarget) {
@@ -104,30 +115,23 @@ class HomePageScala(parameters: PageParameters) extends WebPage {
     }
 	}))
 	
-  add(new AjaxLink("addRoleButton", Model.of("")) {
+  add(new AjaxLink("addRoleButton") {
     override def onClick(target: AjaxRequestTarget) {
 			var em: EntityManager = JpaRequestCycle.getEntityManager()
 			JpaRequestCycle.begin();
-			em.persist(new UserRole("Farewell"));
+			em.persist(new UserRole("Farewell " + new Date().toString()));
 			JpaRequestCycle.commit();
+			
+			//update role list
+			rolesListModel.setObject(em.createQuery("From UserRole", classOf[UserRole]).getResultList())
+			target.add(rolesDropdown);
     }
   })
 
-  def refreshUserList(): Unit = {
-		var em: EntityManager = JpaRequestCycle.getEntityManager()
-		userListModel = em.createQuery("From UserData", classOf[UserData]).getResultList()
+	def getUserById(id:Int): UserData = {
+		return Option(JpaRequestCycle.getEntityManager().find[UserData](classOf[UserData], id)).getOrElse(new UserData())
   }
-	
-	def showUsers(): String = {
-
-    var em: EntityManager = JpaRequestCycle.getEntityManager()
-    val userList = em.createQuery("From UserData", classOf[UserData]).getResultList()
-
-    var result: String = userList.size() + " - "
-    userList.foreach((u: UserData) => {
-      result.concat(u.name + ", ")
-    })
-
-    return result
+  def refreshUserList(): Unit = {
+		userListModel.setObject(JpaRequestCycle.getEntityManager().createQuery("From UserData ORDER BY id", classOf[UserData]).getResultList());
   }
 }
