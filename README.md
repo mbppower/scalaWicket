@@ -41,12 +41,16 @@ output.write(
 );
 ```
 
-<p>Browser output calling url http://localhost:8080/view?name=12</p>
+<p>Browser output calling url http://localhost:8080/view?name=NameParam</p>
 
 ```
 I am a template
-RequestParam: Help:Underscore Template. User list:	
+RequestParam: NameParam	Help:Underscore Template. User list:	
 
     Name: Marcel Role: Farewell Tue May 05 10:44:50 BRT 2015
     Name: Darwin Role: Farewell Tue May 05 10:44:50 BRT 2015
+
 ```
+
+<p>To add users access http://localhost:8080/home</p>
+
