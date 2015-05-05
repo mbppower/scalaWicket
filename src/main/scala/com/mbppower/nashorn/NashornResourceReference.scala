@@ -19,11 +19,13 @@ package com.mbppower.nashorn
 import com.mbppower.JpaRequestCycle
 import java.io.FileReader
 import java.io.OutputStreamWriter
+import javax.script.SimpleScriptContext
 import org.apache.wicket.protocol.http.WebApplication
 import org.apache.wicket.request.resource.ResourceReference
 import org.apache.wicket.request.resource.AbstractResource
 import org.apache.wicket.request.resource.IResource
 import org.apache.wicket.request.resource.IResource.Attributes
+import javax.script.ScriptContext
 import javax.script.ScriptEngineManager
 
 class NashornResourceReference(path:String) extends ResourceReference(path:String) {
@@ -33,7 +35,11 @@ class NashornResourceReference(path:String) extends ResourceReference(path:Strin
 }
 class NashornResource(path:String) extends AbstractResource {
 	
+	//create engine and allows it to use multiple threads and cache scripts
 	val engine = new ScriptEngineManager().getEngineByName("nashorn")
+	val scope = engine.createBindings()
+	val scriptContext = new SimpleScriptContext()
+  scriptContext.setBindings(scope, ScriptContext.ENGINE_SCOPE)
 
 	override def newResourceResponse(attributes:Attributes):AbstractResource.ResourceResponse = {
 		val resourceResponse = new AbstractResource.ResourceResponse()
@@ -44,20 +50,20 @@ class NashornResource(path:String) extends AbstractResource {
 			override def writeData(attributes : Attributes){
 				
 				val outputStream = attributes.getResponse().getOutputStream();
-				val writer = new OutputStreamWriter(outputStream);
-				val context = WebApplication.get().getServletContext();
+				val writer = new OutputStreamWriter(outputStream)
+				val context = WebApplication.get().getServletContext()
 				var jsBaseDir = context.getRealPath("/WEB-INF/classes")
 
-				//expose java objects
-				engine.put("jpa", JpaRequestCycle)
-				engine.put("context", attributes)
-				engine.put("jsBaseDir", jsBaseDir)
-				engine.put("output", writer)
+				//expose java objects to this scope
+				scope.put("jpa", JpaRequestCycle)
+				scope.put("context", attributes)
+				scope.put("jsBaseDir", jsBaseDir)
+				scope.put("output", writer)
 
 				//process
-				engine.eval(new FileReader( jsBaseDir + path));
-				writer.flush();
-				writer.close();
+				engine.eval(new FileReader( jsBaseDir + path), scriptContext)
+				writer.flush()
+				writer.close()
 			}      
 		})
 		return resourceResponse
