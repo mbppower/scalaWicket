@@ -18,19 +18,35 @@ mountResource("/view", new NashornResourceReference("/js/view/index.js"))
 <p>index.js contents:</p>
 
 ```
-var outputs = "";
-var i = 0;
-while(i++ < 100 ){
-	outputs += " " + i;
-}
+load(jsBaseDir + '/js/view/helper.js');
+load(jsBaseDir + '/js/lib/underscore-min.js');
 
+//get request parameter
 var name = context.getParameters().get("name").toString();
 
-output.write(outputs + " param: " + name);
+//parse undescore template
+var compiled = _.template(Helper.readContents(jsBaseDir + "/js/view/template/index.html"));
+
+//jpa entity manager instance
+var em = jpa.getEntityManager();
+var users = em.createQuery("From UserData").getResultList();
+
+//render template and output it to the browser
+output.write(
+	compiled({
+		name : name,
+		help: "Underscore Template. User list:",
+		users : users
+	})
+);
 ```
 
 <p>Browser output calling url http://localhost:8080/view?name=12</p>
 
 ```
-1 2 3 4 5 6 7 8 9 10 param: 12
+I am a template
+RequestParam: Help:Underscore Template. User list:	
+
+    Name: Marcel Role: Farewell Tue May 05 10:44:50 BRT 2015
+    Name: Darwin Role: Farewell Tue May 05 10:44:50 BRT 2015
 ```
