@@ -54,3 +54,7 @@ RequestParam: NameParam	Help:Underscore Template. User list:
 
 <p>To add users access http://localhost:8080/home</p>
 
+# Requirements
+* Java 8
+* Postgresql
+
